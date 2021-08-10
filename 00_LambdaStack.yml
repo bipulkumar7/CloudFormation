@@ -13,7 +13,7 @@ Resources:
   MySubscription:
     Type: AWS::SNS::Subscription
     Properties:
-      Endpoint: "arn:aws:sqs:us-east-1:662288861703:SampleQueue1"
+      Endpoint: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:SampleQueue1"
       Protocol: "sqs"
       RawMessageDelivery: 'true'
       TopicArn: !Ref 'MySNSTopic'
@@ -27,7 +27,7 @@ Resources:
             Action:
               - "SQS:SendMessage"
             Effect: "Allow"
-            Resource: "arn:aws:sqs:us-east-1:662288861703:SampleQueue1"
+            Resource: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:SampleQueue1"
             Principal: "*"
       Queues:
         - !Ref MyQueue

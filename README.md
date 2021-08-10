@@ -5,7 +5,7 @@ Write a cloud formation template to deploy a lambda function with the following:
 > Necessary policies and roles required for this use-case
 
 
-Use `aws cloudformation create-stack --stack-name  s3Stack  --template-body file://00_s3Stack.yml --capabilities "CAPABILITY_NAMED_IAM" ` to deploy the s3 bucker and upload your code into it.
+Use `aws cloudformation create-stack --stack-name  s3Stack  --template-body file://00_s3Stack.yml` to deploy the s3 bucker and upload your code into it.
 
 Use `aws cloudformation create-stack --stack-name  LambdaFunction  --template-body file://00_LambdaStack.yml --capabilities "CAPABILITY_NAMED_IAM" ` to deploy the stack.
 
