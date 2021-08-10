@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  MyQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: "SampleQueue1"
+
+  MySNSTopic:
+    Type: 'AWS::SNS::Topic'
+    Properties:
+      TopicName: "SampleTopic"
+
+  MySubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: "arn:aws:sqs:us-east-1:662288861703:SampleQueue1"
+      Protocol: "sqs"
+      RawMessageDelivery: 'true'
+      TopicArn: !Ref 'MySNSTopic'
+
+  SampleSQSPolicy:
+    Type: 'AWS::SQS::QueuePolicy'
+    Properties:
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "SQS:SendMessage"
+            Effect: "Allow"
+            Resource: "arn:aws:sqs:us-east-1:662288861703:SampleQueue1"
+            Principal: "*"
+      Queues:
+        - !Ref MyQueue
+  MyRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: "Lambda21"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+      - PolicyName: "AWSLambdaBasicExecutionRole"
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+      - PolicyName: AmazonS3getAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: "Allow"
+            Action: "s3:*"
+            Resource: "*"
+      - PolicyName: SqsQueueExecutionRole
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: "Allow"
+            Action:
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: "*"
+
+
+  MyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: "lambda_function.lambda_handler"
+      Role: !GetAtt ["MyRole", "Arn"]
+      Runtime: "python3.6"
+      FunctionName: "lambda_function"
+      Timeout: 3
+      Code:
+          S3Bucket: "node1-0-bucket"
+          S3Key: "README2.md"
+          S3ObjectVersion: "zdm4YxBgHUVhjCpNhciGWeiquJSWyNJi"
+
+  LambdaEventSourceMapping:
+    Type: "AWS::Lambda::EventSourceMapping"
+    Properties:
+      BatchSize: 1
+      EventSourceArn: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:SampleQueue1"
+      FunctionName: !GetAtt MyFunction.Arn
+      Enabled: true
+      MaximumBatchingWindowInSeconds: 0
